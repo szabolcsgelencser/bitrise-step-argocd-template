@@ -28,25 +28,24 @@ func run() error {
 	repoURL := os.Getenv("deploy_repository")
 	pathInRepo := os.Getenv("deploy_path")
 
-	localDir, err := ioutil.TempDir("", "")
-	if err != nil {
-		return fmt.Errorf("create temporary directory: %w", err)
-	}
-	// defer os.Remove(localDir)
-	fmt.Printf("created tmp directory at: %s\n", localDir)
-
 	if err := gitAddKey(deployKeyPath, stepconf.Secret(deployKey)); err != nil {
 		return fmt.Errorf("git add key: %w", err)
 	}
-	if err := gitClone(repoURL, localDir); err != nil {
+
+	dr, err := newDeployRepository(repoURL, pathInRepo)
+	if err != nil {
+		return fmt.Errorf("new deploy repository: %w", err)
+	}
+	defer dr.close()
+
+	if err := dr.gitClone(); err != nil {
 		return fmt.Errorf("git clone: %w", err)
 	}
-	renderPath := localDir + "/" + pathInRepo + "/values.yaml"
-	if err := renderValuesYAML(renderPath, valuesYAMLPath, vars); err != nil {
+	if err := dr.renderValuesYAML(valuesYAMLPath, vars); err != nil {
 		return fmt.Errorf("render values.yaml file: %w", err)
 	}
 	commitMessage := fmt.Sprintf("test run at %s", time.Now())
-	if err := gitPush(localDir, commitMessage); err != nil {
+	if err := dr.pushChanges(commitMessage); err != nil {
 		return fmt.Errorf("git clone: %w", err)
 	}
 
@@ -64,21 +63,6 @@ func parseVars(s string) map[string]string {
 	return m
 }
 
-func renderValuesYAML(renderPath, tplPath string, vars interface{}) error {
-	t, err := template.ParseFiles(tplPath)
-	if err != nil {
-		return fmt.Errorf("parse template %q: %w", tplPath, err)
-	}
-	f, err := os.Create(renderPath)
-	if err != nil {
-		return fmt.Errorf("create file to render: %w", err)
-	}
-	if err := t.Execute(f, vars); err != nil {
-		return fmt.Errorf("execute values.yaml template: %w", err)
-	}
-	return nil
-}
-
 func gitAddKey(path string, key stepconf.Secret) error {
 	if err := activatesshkey.Execute(activatesshkey.Config{
 		SSHRsaPrivateKey:        key,
@@ -90,19 +74,67 @@ func gitAddKey(path string, key stepconf.Secret) error {
 	return nil
 }
 
-func gitClone(repoURL, localDir string) error {
-	return runCommand("git", "clone", repoURL, localDir)
+type deployRepository struct {
+	repoURL    string
+	localDir   string
+	pathInRepo string
 }
 
-func gitPush(localDir, message string) error {
+func newDeployRepository(repoURL, pathInRepo string) (*deployRepository, error) {
+	localDir, err := ioutil.TempDir("", "")
+	if err != nil {
+		return nil, fmt.Errorf("create temporary directory: %w", err)
+	}
+	return &deployRepository{
+		repoURL:    repoURL,
+		localDir:   localDir,
+		pathInRepo: pathInRepo,
+	}, nil
+}
+
+func (dr deployRepository) close() {
+	os.Remove(dr.localDir)
+}
+
+func (dr deployRepository) renderValuesYAML(tplPath string, vars interface{}) error {
+	t, err := template.ParseFiles(tplPath)
+	if err != nil {
+		return fmt.Errorf("parse template %q: %w", tplPath, err)
+	}
+	renderPath := dr.localDir + "/" + dr.pathInRepo + "/values.yaml"
+	f, err := os.Create(renderPath)
+	if err != nil {
+		return fmt.Errorf("create file to render: %w", err)
+	}
+	if err := t.Execute(f, vars); err != nil {
+		return fmt.Errorf("execute values.yaml template: %w", err)
+	}
+	return nil
+}
+
+func (dr deployRepository) gitClone() error {
+	_, err := runCommand("git", "clone", dr.repoURL, dr.localDir)
+	return err
+}
+
+func (dr deployRepository) pushChanges(message string) error {
 	startingDir, err := os.Getwd()
 	if err != nil {
 		return fmt.Errorf("get current dir: %w", err)
 	}
-	if err := os.Chdir(localDir); err != nil {
-		return fmt.Errorf("change dir ot %q: %w", localDir, err)
+	if err := os.Chdir(dr.localDir); err != nil {
+		return fmt.Errorf("change dir ot %q: %w", dr.localDir, err)
 	}
 	defer os.Chdir(startingDir)
+
+	status, err := runCommand("git", "status")
+	if err != nil {
+		return err
+	}
+	if strings.Contains(status, "nothing to commit, working tree clean") {
+		fmt.Println("Deployment configuration didn't change, nothing to push.")
+		return nil
+	}
 
 	gitArgs := [][]string{
 		{"add", "--all"},
@@ -110,17 +142,17 @@ func gitPush(localDir, message string) error {
 		{"push"},
 	}
 	for _, a := range gitArgs {
-		if err := runCommand("git", a...); err != nil {
+		if _, err := runCommand("git", a...); err != nil {
 			return err
 		}
 	}
 	return nil
 }
 
-func runCommand(cmd string, args ...string) error {
+func runCommand(cmd string, args ...string) (string, error) {
 	out, err := exec.Command(cmd, args...).CombinedOutput()
 	if err != nil {
-		return fmt.Errorf("run command %v: %w (output: %s)", args, err, out)
+		return "", fmt.Errorf("run command %v: %w (output: %s)", args, err, out)
 	}
-	return nil
+	return string(out), nil
 }

@@ -11,4 +11,4 @@ workflows:
         - deploy_path: sample
         - vars:
             repository: us.gcr.io/ubp-staging/szabi/sample
-            tag: testing
+            tag: other-tag
