@@ -67,7 +67,7 @@ func gitAddKey(path string, key stepconf.Secret) error {
 	if err := activatesshkey.Execute(activatesshkey.Config{
 		SSHRsaPrivateKey:        key,
 		SSHKeySavePath:          path,
-		IsRemoveOtherIdentities: false,
+		IsRemoveOtherIdentities: true,
 	}); err != nil {
 		return fmt.Errorf("activate ssh key: %w", err)
 	}
