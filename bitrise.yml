@@ -1,0 +1,14 @@
+format_version: 11
+default_step_lib_source: https://github.com/bitrise-io/bitrise-steplib.git
+
+workflows:
+  test:
+    steps:
+    - path::./:
+        title: Testing ArgoCD Template step
+        inputs:
+        - deploy_repository: git@github.com:szabolcsgelencser/sample-deploy-config.git
+        - deploy_path: sample
+        - vars:
+            repository: us.gcr.io/ubp-staging/szabi/sample
+            tag: testing

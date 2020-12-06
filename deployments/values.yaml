@@ -1,0 +1,17 @@
+---
+api-service:
+  replicaCount: 1
+
+  global:
+    service:
+      name: "sample"
+      port: 80
+
+  image:
+    name: "{{ .repository }}:{{ .tag }}"
+
+  ddog:
+    apm: false
+
+  serviceAccount:
+    create: false

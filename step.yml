@@ -1,0 +1,58 @@
+title: ArgoCD Template
+summary: Pushes a templated Helm chart to a repository monitored by ArgoCD
+description: Pushes a templated Helm chart to a repository monitored by ArgoCD
+website: https://github.com/szabolcsgelencser/bitrise-step-argocd-template
+source_code_url: https://github.com/szabolcsgelencser/bitrise-step-argocd-template
+support_url: https://github.com/szabolcsgelencser/bitrise-step-argocd-template/issues
+host_os_tags:
+- ubuntu-16.04
+type_tags:
+  - deploy
+
+is_requires_admin_user: false
+is_always_run: false
+is_skippable: false
+run_if: ""
+
+deps:
+  brew:
+  - name: git
+  apt_get:
+  - name: git
+
+
+toolkit:
+  go:
+    package_name: github.com/szabolcsgelencser/bitrise-step-argocd-template
+
+
+inputs:
+- deployments_folder_path: deployments
+  opts:
+    title: Deployments folder path.
+    summary: Path to the deployments folder.
+    description: Path to the deployments folder. Files can be go templates.
+    is_expand: false
+    is_required: true
+    value_options: []
+- vars: {}
+  opts:
+    title: Input variables.
+    summary: Input variables for the template files.
+    description: Input variables for the template files.
+    is_expand: false
+    is_required: true
+    value_options: []
+- deploy_ssh_key: "$DEPLOY_SSH_KEY"
+  opts:
+    title: SSH private key in RSA format
+    is_expand: true
+    is_dont_change_value: true
+    is_sensitive: true
+- ssh_key_save_path: "$HOME/.ssh/bitrise_step_deploy_config_ssh_key"
+  opts:
+    title: (Optional) path to save the private key.
+    is_expand: true
+    is_dont_change_value: true
+- deploy_repository: ""
+- deploy_path: ""

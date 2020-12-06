@@ -1,0 +1,20 @@
+# github.com/bitrise-io/bitrise-init v0.0.0-20201126121127-4e770640d962
+## explicit
+github.com/bitrise-io/bitrise-init/step
+# github.com/bitrise-io/go-steputils v0.0.0-20201016102104-03ae3a6ded35
+## explicit
+github.com/bitrise-io/go-steputils/stepconf
+github.com/bitrise-io/go-steputils/tools
+# github.com/bitrise-io/go-utils v0.0.0-20201019131314-6cc2aa4d248a
+## explicit
+github.com/bitrise-io/go-utils/colorstring
+github.com/bitrise-io/go-utils/command
+github.com/bitrise-io/go-utils/errorutil
+github.com/bitrise-io/go-utils/fileutil
+github.com/bitrise-io/go-utils/log
+github.com/bitrise-io/go-utils/parseutil
+github.com/bitrise-io/go-utils/pathutil
+github.com/bitrise-io/go-utils/pointers
+# github.com/bitrise-steplib/steps-activate-ssh-key v0.0.0-20201012093212-e0112276ec1d
+## explicit
+github.com/bitrise-steplib/steps-activate-ssh-key/activatesshkey
