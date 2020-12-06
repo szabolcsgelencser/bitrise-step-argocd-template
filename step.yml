@@ -32,7 +32,7 @@ inputs:
     title: Deployments folder path.
     summary: Path to the deployments folder.
     description: Path to the deployments folder. Files can be go templates.
-    is_expand: false
+    is_expand: true
     is_required: true
     value_options: []
 - vars: {}
@@ -40,7 +40,7 @@ inputs:
     title: Input variables.
     summary: Input variables for the template files.
     description: Input variables for the template files.
-    is_expand: false
+    is_expand: true
     is_required: true
     value_options: []
 - deploy_ssh_key: "$DEPLOY_SSH_KEY"
