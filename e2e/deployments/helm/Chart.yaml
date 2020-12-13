@@ -1,0 +1,11 @@
+---
+apiVersion: v2
+name: sample
+description: A sample service
+type: application
+version: 0.1.0
+appVersion: {{ .appVersion }}
+dependencies:
+- name: api-service
+  version: "0.1.1"
+  repository: "https://bitrise-io.github.io/k8s-recipes/"

@@ -7,8 +7,17 @@ workflows:
     - path::./:
         title: Testing ArgoCD Template step
         inputs:
-        - deploy_repository: git@github.com:szabolcsgelencser/sample-deploy-config.git
+        - deploy_repository_url: git@github.com:szabolcsgelencser/sample-deploy-config.git
         - deploy_path: sample
+        - deploy_branch: master
+        - templates_folder_path: e2e/deployments/helm
+        # - pull_request: true
         - vars:
             repository: us.gcr.io/ubp-staging/szabi/sample
-            tag: other-tag
+            tag: test-tag-3
+            appVersion: 0.3.0
+    - script:
+        inputs:
+        - content: |
+            #!/bin/bash
+            echo "My Pull Request URL: $PR_URL"

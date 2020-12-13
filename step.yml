@@ -1,4 +1,5 @@
-title: ArgoCD Template
+title: GitOps integration
+# TODO: better summary and description, repo name...
 summary: Pushes a templated Helm chart to a repository monitored by ArgoCD
 description: Pushes a templated Helm chart to a repository monitored by ArgoCD
 website: https://github.com/szabolcsgelencser/bitrise-step-argocd-template
@@ -7,7 +8,7 @@ support_url: https://github.com/szabolcsgelencser/bitrise-step-argocd-template/i
 host_os_tags:
 - ubuntu-16.04
 type_tags:
-  - deploy
+- deploy
 
 is_requires_admin_user: false
 is_always_run: false
@@ -20,39 +21,43 @@ deps:
   apt_get:
   - name: git
 
-
 toolkit:
   go:
     package_name: github.com/szabolcsgelencser/bitrise-step-argocd-template
 
-
 inputs:
-- deployments_folder_path: deployments
+# TODO: finalise inputs
+- deploy_repository_url: ""
   opts:
-    title: Deployments folder path.
-    summary: Path to the deployments folder.
-    description: Path to the deployments folder. Files can be go templates.
-    is_expand: true
     is_required: true
-    value_options: []
+- deploy_path: ""
+  opts:
+    is_required: true
+- deploy_branch: "master"
+- pull_request: false
+  opts:
+    value_options:
+    - true
+    - false
+- pull_request_title: ""
+- pull_request_body: ""
+- commit_message: "bitrise ci integration"
+
 - vars: {}
   opts:
     title: Input variables.
     summary: Input variables for the template files.
-    description: Input variables for the template files.
-    is_expand: true
-    is_required: true
-    value_options: []
-- deploy_ssh_key: "$DEPLOY_SSH_KEY"
-  opts:
-    title: SSH private key in RSA format
-    is_expand: true
     is_dont_change_value: true
+    is_expand: true
+- templates_folder_path: deployments/helm
+  opts:
+    title: Deployment templates folder path.
+    summary: Path to the deployment templates folder. Files can be go templates.
+    is_dont_change_value: true
+    is_expand: true
+- deploy_pat: $DEPLOY_PAT
+  opts:
+    title: Personal Access Token to interact with Github API.
+    is_dont_change_value: true
+    is_expand: true
     is_sensitive: true
-- ssh_key_save_path: "$HOME/.ssh/bitrise_step_deploy_config_ssh_key"
-  opts:
-    title: (Optional) path to save the private key.
-    is_expand: true
-    is_dont_change_value: true
-- deploy_repository: ""
-- deploy_path: ""
